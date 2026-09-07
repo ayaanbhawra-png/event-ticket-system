@@ -16,17 +16,11 @@ module.exports = {
     },
     networks: {
         hardhat: {
-            chainId: 1337,
-            blockGasLimit: 30000000,
-            gas: 30000000,
-            gasPrice: 20000000000
+            chainId: 1337
         },
         localhost: {
             url: "http://127.0.0.1:8545",
-            chainId: 1337,
-            blockGasLimit: 30000000,
-            gas: 30000000,
-            gasPrice: 20000000000
+            chainId: 1337
         },
         ganache: {
             url: "http://127.0.0.1:7545",  // ← Ganache RPC URL

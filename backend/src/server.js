@@ -40,6 +40,10 @@ app.use((err, req, res, next) => {
     });
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, '127.0.0.1', () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
+});
+
+server.on('error', (err) => {
+    console.error('Server error:', err);
 });
