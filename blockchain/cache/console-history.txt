@@ -1,0 +1,21 @@
+});    value: amount    to: "0xYOUR_NEW_METAMASK_ADDRESS",await sender.sendTransaction({
+const amount = ethers.parseEther("100");
+const [sender] = await ethers.getSigners();
+}    console.log("❌ Contract NOT deployed to Ganache")} else {    console.log("📊 Events found:", events.length)    const events = await contract.queryFilter(filter, 0, 'latest')    const filter = contract.filters.EventCreated()    const contract = await ethers.getContractAt("EventTicketSystem", address)    console.log("✅ Contract is deployed!")if (code.length > 2) {
+// If code length > 0, contract exists
+console.log("Contract code length:", code.length)
+const code = await ethers.provider.getCode(address)
+// Check if contract exists
+const address = "0x3e236c5aF067A351f8218d46D4F811FdE03D9682"
+// Use the FULL address
+const code = await ethers.provider.getCode(address)
+const address = "0x3e236c5aF067A351f8218d46D4F811FdE03D9682"
+const events = await contract.queryFilter(filter, 0, 'latest')
+const filter = contract.filters.EventCreated()
+const contract = await ethers.getContractAt("EventTicketSystem", address)
+const address = process.env.CONTRACT_ADDRESS
+console.log("Events found:", events.length)
+const events = await contract.queryFilter(filter, 0, 'latest')
+const filter = contract.filters.EventCreated()
+const contract = await ethers.getContractAt("EventTicketSystem", address)
+const address = process.env.CONTRACT_ADDRESS
