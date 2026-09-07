@@ -120,8 +120,7 @@ export default function UserEvents() {
                 BigInt(selectedEvent.id),
                 BigInt(selectedTier),
                 {
-                    value: ethers.parseEther(tier.price),
-                    gasLimit: 500000
+                    value: ethers.parseEther(tier.price)
                 }
             );
 
