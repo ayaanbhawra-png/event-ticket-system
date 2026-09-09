@@ -34,7 +34,8 @@ export default function UserTickets() {
 
     const fetchUserTickets = async () => {
         try {
-            const response = await fetch(`http://localhost:5000/api/user/tickets/${address}`)
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050'
+            const response = await fetch(`${apiUrl}/api/user/tickets/${address}`)
             const data = await response.json()
             if (data.success) {
                 setTickets(data.tickets || [])
@@ -91,6 +92,39 @@ export default function UserTickets() {
                 >
                     <span>+ Explore More Events</span>
                 </Link>
+            </div>
+
+            {/* Ticket Summary Stats Banner */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl font-bold">
+                        🎟️
+                    </div>
+                    <div>
+                        <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Purchased Tickets</p>
+                        <p className="text-xl font-extrabold text-slate-900">{tickets.length} {tickets.length === 1 ? 'Ticket' : 'Tickets'}</p>
+                    </div>
+                </div>
+
+                <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl font-bold">
+                        ✅
+                    </div>
+                    <div>
+                        <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Active & Valid Passes</p>
+                        <p className="text-xl font-extrabold text-emerald-700">{tickets.filter(t => !t.isUsed && t.isValid).length}</p>
+                    </div>
+                </div>
+
+                <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center text-xl font-bold">
+                        🏁
+                    </div>
+                    <div>
+                        <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Used Entry Passes</p>
+                        <p className="text-xl font-extrabold text-slate-700">{tickets.filter(t => t.isUsed).length}</p>
+                    </div>
+                </div>
             </div>
 
             {/* Tickets Grid or Empty State */}

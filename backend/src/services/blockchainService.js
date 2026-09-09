@@ -1,12 +1,16 @@
+require('dotenv').config();
 const { ethers } = require('ethers');
 const contractABI = require('./EventTicketSystem.json');
+
+const DEFAULT_ADMIN_KEY = '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80';
 
 class BlockchainService {
     constructor() {
         // Use Hardhat RPC URL (port 8545)
         this.provider = new ethers.JsonRpcProvider(process.env.RPC_URL || 'http://127.0.0.1:8545');
-        this.adminWallet = new ethers.Wallet(process.env.ADMIN_PRIVATE_KEY, this.provider);
-        this.contractAddress = process.env.CONTRACT_ADDRESS;
+        const adminPrivateKey = process.env.ADMIN_PRIVATE_KEY || DEFAULT_ADMIN_KEY;
+        this.adminWallet = new ethers.Wallet(adminPrivateKey, this.provider);
+        this.contractAddress = process.env.CONTRACT_ADDRESS || '0x5FbDB2315678afecb367f032d93F642f64180aa3';
         
         console.log('✅ RPC URL:', process.env.RPC_URL || 'http://127.0.0.1:8545');
         console.log('✅ Contract Address:', this.contractAddress);
@@ -154,21 +158,25 @@ class BlockchainService {
 
     async getUserTickets(address) {
         try {
-            console.log('👤 Getting tickets for address:', address);
+            const checksumAddress = ethers.getAddress(address);
+            console.log('👤 Getting tickets for address:', checksumAddress);
             
-            const ticketIds = await this.contract.getUserTickets(address);
+            const ticketIds = await this.contract.getUserTickets(checksumAddress);
+            console.log('🎟️ Found raw ticket IDs on contract:', ticketIds.map(t => t.toString()));
             const tickets = [];
 
             for (const id of ticketIds) {
                 try {
                     const details = await this.contract.getTicketDetails(id);
                     const event = await this.contract.getEventDetails(details.eventId);
-                    const tier = await this.contract.eventTiers(details.eventId, details.tierIndex);
+                    const tiers = await this.contract.getEventTiers(details.eventId);
+                    const tier = tiers[Number(details.tierIndex)] || { name: 'Standard Admission' };
 
                     tickets.push({
+                        id: id.toString(),
                         ticketId: id.toString(),
                         eventName: event.name,
-                        eventDate: event.startDate,
+                        eventDate: Number(event.startDate),
                         venue: event.venue,
                         tierName: tier.name,
                         price: ethers.formatEther(details.price),
@@ -177,7 +185,7 @@ class BlockchainService {
                         eventId: details.eventId.toString()
                     });
                 } catch (err) {
-                    console.warn('⚠️ Error fetching ticket details:', err.message);
+                    console.error('⚠️ Error fetching ticket details for ID', id.toString(), ':', err);
                 }
             }
 

@@ -58,7 +58,8 @@ function AdminDashboardContent() {
                 return
             }
 
-            const response = await fetch('http://localhost:5000/api/admin/events', {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050'
+            const response = await fetch(`${apiUrl}/api/admin/events`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -80,7 +81,8 @@ function AdminDashboardContent() {
                 
                 // Add initial tier if configured
                 try {
-                    await fetch('http://localhost:5000/api/admin/tiers', {
+                    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050'
+                    await fetch(`${apiUrl}/api/admin/tiers`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({

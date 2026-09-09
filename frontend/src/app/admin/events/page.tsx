@@ -36,7 +36,8 @@ function AdminEventsContent() {
 
     const fetchEvents = async () => {
         try {
-            const response = await fetch('http://localhost:5000/api/admin/events')
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050'
+            const response = await fetch(`${apiUrl}/api/admin/events`)
             const data = await response.json()
             if (data.success) {
                 setEvents(data.events || [])

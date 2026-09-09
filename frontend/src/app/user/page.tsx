@@ -47,7 +47,8 @@ export default function UserEvents() {
 
     const fetchEvents = async () => {
         try {
-            const response = await fetch('http://localhost:5000/api/events')
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050'
+            const response = await fetch(`${apiUrl}/api/events`)
             const data = await response.json()
             if (data.success) {
                 setEvents(data.events || [])

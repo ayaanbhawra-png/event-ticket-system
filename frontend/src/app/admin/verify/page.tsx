@@ -50,7 +50,8 @@ function AdminVerifyContent() {
 
             const ticketId = parsedData?.ticketId || rawQR
 
-            const response = await fetch('http://localhost:5000/api/verify', {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050'
+            const response = await fetch(`${apiUrl}/api/verify`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ qrData: qrPayload })
@@ -90,7 +91,8 @@ function AdminVerifyContent() {
 
         try {
             setVerifying(true)
-            const response = await fetch(`http://localhost:5000/api/user/ticket/${manualTicketId.trim()}`)
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050'
+            const response = await fetch(`${apiUrl}/api/user/ticket/${manualTicketId.trim()}`)
             const data = await response.json()
 
             if (data.success && data.ticket) {
@@ -120,7 +122,8 @@ function AdminVerifyContent() {
         if (!result) return
         try {
             setMarkingUsed(true)
-            const response = await fetch('http://localhost:5000/api/admin/verify-ticket', {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050'
+            const response = await fetch(`${apiUrl}/api/admin/verify-ticket`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
