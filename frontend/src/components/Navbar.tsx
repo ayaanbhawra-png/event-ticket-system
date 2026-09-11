@@ -3,20 +3,29 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useAuth } from '@/context/AuthContext'
 import WalletConnect from './WalletConnect'
 
 export default function Navbar() {
     const pathname = usePathname()
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+    const { isAdmin, logoutAdmin } = useAuth()
 
-    const navLinks = [
+    const userLinks = [
         { name: 'Home', href: '/' },
         { name: 'Events', href: '/user/events' },
         { name: 'My Tickets', href: '/user/tickets' },
+    ]
+
+    const adminLinks = [
+        { name: 'Home', href: '/' },
+        { name: 'Events', href: '/user/events' },
         { name: 'Admin Dashboard', href: '/admin' },
         { name: 'Manage Events', href: '/admin/events' },
         { name: 'Verify QR', href: '/admin/verify' },
     ]
+
+    const navLinks = isAdmin ? adminLinks : userLinks
 
     return (
         <header className="bg-white/80 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-50 transition-all">
@@ -36,7 +45,7 @@ export default function Navbar() {
                                     TicketBlock
                                 </span>
                                 <span className="text-[10px] font-semibold uppercase tracking-wider text-indigo-500">
-                                    Web3 Verification
+                                    {isAdmin ? '🛡️ Admin Access' : 'Web3 Verification'}
                                 </span>
                             </div>
                         </Link>
@@ -64,6 +73,24 @@ export default function Navbar() {
                     {/* Right side Actions */}
                     <div className="flex items-center gap-3">
                         <WalletConnect />
+
+                        {isAdmin ? (
+                            <button
+                                onClick={logoutAdmin}
+                                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-50 text-rose-700 border border-rose-100 hover:bg-rose-100 font-semibold text-xs transition-colors"
+                            >
+                                <span>Logout Admin</span>
+                                <span>🚪</span>
+                            </button>
+                        ) : (
+                            <Link
+                                href="/admin/login"
+                                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs transition-colors shadow-sm"
+                            >
+                                <span>Organizer Sign-In</span>
+                                <span>🔐</span>
+                            </Link>
+                        )}
 
                         {/* Mobile Menu Button */}
                         <button
@@ -104,6 +131,16 @@ export default function Navbar() {
                             </Link>
                         )
                     })}
+
+                    {!isAdmin && (
+                        <Link
+                            href="/admin/login"
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="block px-3 py-2.5 rounded-lg text-base font-semibold text-purple-600 hover:bg-purple-50"
+                        >
+                            🔐 Organizer Portal Access
+                        </Link>
+                    )}
                 </div>
             )}
         </header>

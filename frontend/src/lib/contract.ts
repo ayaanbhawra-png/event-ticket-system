@@ -198,5 +198,19 @@ export const contractABI = [
         ],
         "stateMutability": "view",
         "type": "function"
+    },
+    {
+        "inputs": [{ "internalType": "uint256", "name": "_eventId", "type": "uint256" }],
+        "name": "getEventRevenue",
+        "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [{ "internalType": "uint256", "name": "_eventId", "type": "uint256" }],
+        "name": "withdrawEventRevenue",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
     }
 ] as const

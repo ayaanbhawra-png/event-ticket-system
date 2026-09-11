@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
 import AdminGuard from '@/components/AdminGuard'
+import { contractABI, contractAddress } from '@/lib/contract'
 
 interface Event {
     id: string
@@ -29,6 +30,7 @@ function AdminEventsContent() {
     const router = useRouter()
     const [events, setEvents] = useState<Event[]>([])
     const [loading, setLoading] = useState(true)
+    const [withdrawingId, setWithdrawingId] = useState<string | null>(null)
 
     useEffect(() => {
         fetchEvents()
@@ -50,6 +52,43 @@ function AdminEventsContent() {
         }
     }
 
+    const handleWithdrawRevenue = async (eventId: string) => {
+        try {
+            if (!window.ethereum) {
+                toast.error('MetaMask is not installed')
+                return
+            }
+            setWithdrawingId(eventId)
+            const { ethers } = await import('ethers')
+            const provider = new ethers.BrowserProvider(window.ethereum)
+            const signer = await provider.getSigner()
+
+            const contract = new ethers.Contract(
+                contractAddress,
+                contractABI,
+                signer
+            )
+
+            toast.loading('Claiming ticket sales ETH to your wallet...', { id: 'withdraw' })
+            const tx = await contract.withdrawEventRevenue(BigInt(eventId))
+            await tx.wait()
+
+            toast.success('🎉 Event revenue successfully withdrawn to your wallet!', { id: 'withdraw' })
+            fetchEvents()
+        } catch (error: any) {
+            console.error('Withdraw error:', error)
+            toast.error(
+                error?.reason ||
+                error?.shortMessage ||
+                error?.message ||
+                'Withdrawal failed or no revenue to claim',
+                { id: 'withdraw' }
+            )
+        } finally {
+            setWithdrawingId(null)
+        }
+    }
+
     if (loading) {
         return (
             <div className="max-w-7xl mx-auto px-4 py-20 flex flex-col items-center justify-center">
@@ -59,16 +98,18 @@ function AdminEventsContent() {
         )
     }
 
+    const totalSoldAcrossEvents = events.reduce((acc, ev) => acc + (parseInt(ev.ticketsSold) || 0), 0)
+
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 pb-6 border-b border-slate-200">
                 <div>
                     <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-                        Manage <span className="gradient-text">Created Events</span>
+                        Organizer <span className="gradient-text">Event Management</span>
                     </h1>
                     <p className="text-slate-600 text-sm mt-1">
-                        Monitor live sales volume, capacities, and gate access verification
+                        Monitor live sales volume, capacities, gate access verification, and withdraw earned ticket ETH
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -79,6 +120,39 @@ function AdminEventsContent() {
                         <span>+</span>
                         <span>Create New Event</span>
                     </Link>
+                </div>
+            </div>
+
+            {/* Organizer Overview Stats Banner */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-2xl">
+                        📋
+                    </div>
+                    <div>
+                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Managed Events</p>
+                        <p className="text-2xl font-extrabold text-slate-900">{events.length}</p>
+                    </div>
+                </div>
+
+                <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-2xl">
+                        🎟️
+                    </div>
+                    <div>
+                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Tickets Sold</p>
+                        <p className="text-2xl font-extrabold text-indigo-700">{totalSoldAcrossEvents}</p>
+                    </div>
+                </div>
+
+                <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl">
+                        💰
+                    </div>
+                    <div>
+                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">On-Chain Payout Status</p>
+                        <p className="text-sm font-bold text-emerald-700">Direct Contract Earnings</p>
+                    </div>
                 </div>
             </div>
 
@@ -166,13 +240,22 @@ function AdminEventsContent() {
                                     </div>
                                 </div>
 
-                                <div className="p-6 pt-0 flex gap-2">
+                                <div className="p-6 pt-0 space-y-2">
+                                    <button
+                                        onClick={() => handleWithdrawRevenue(event.id)}
+                                        disabled={withdrawingId === event.id}
+                                        className="w-full py-2.5 px-4 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5 border border-emerald-200/80 disabled:opacity-50"
+                                    >
+                                        <span>💰</span>
+                                        <span>{withdrawingId === event.id ? 'Claiming ETH...' : 'Withdraw Event Revenue'}</span>
+                                    </button>
+
                                     <button
                                         onClick={() => router.push('/admin/verify')}
-                                        className="w-full py-2.5 px-4 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5"
+                                        className="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5"
                                     >
                                         <span>📷</span>
-                                        <span>Verify Tickets</span>
+                                        <span>Verify Tickets at Gate</span>
                                     </button>
                                 </div>
                             </div>

@@ -65,6 +65,7 @@ contract EventTicketSystem is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard
     mapping(address => uint256[]) public userTickets;
     mapping(uint256 => bool) public usedTickets;
     mapping(uint256 => uint256) public maxResalePrice;
+    mapping(uint256 => uint256) public eventRevenue;
 
     // ---------- EVENTS ----------
     event EventCreated(uint256 indexed eventId, address indexed organizer, string name);
@@ -74,6 +75,7 @@ contract EventTicketSystem is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard
     event TicketRevoked(uint256 indexed ticketId, address indexed owner);
     event RefundIssued(uint256 indexed ticketId, address indexed owner, uint256 amount);
     event ResalePriceSet(uint256 indexed eventId, uint256 maxPrice);
+    event RevenueWithdrawn(uint256 indexed eventId, address indexed organizer, uint256 amount);
 
     // ---------- MODIFIERS ----------
     modifier eventExists(uint256 _eventId) {
@@ -227,6 +229,7 @@ contract EventTicketSystem is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard
 
         tier.sold++;
         eventData.ticketsSold++;
+        eventRevenue[_eventId] += tier.price;
         ticketsPerUser[_eventId][msg.sender]++;
         userTickets[msg.sender].push(ticketId);
 
@@ -435,6 +438,22 @@ contract EventTicketSystem is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard
 
     function getContractBalance() external view onlyOwner returns (uint256) {
         return address(this).balance;
+    }
+
+    function getEventRevenue(uint256 _eventId) external view eventExists(_eventId) returns (uint256) {
+        return eventRevenue[_eventId];
+    }
+
+    function withdrawEventRevenue(uint256 _eventId) external nonReentrant eventExists(_eventId) {
+        Event storage eventData = events[_eventId];
+        require(msg.sender == eventData.organizer || msg.sender == owner(), "Not event organizer");
+        uint256 amount = eventRevenue[_eventId];
+        require(amount > 0, "No revenue available to withdraw");
+
+        eventRevenue[_eventId] = 0;
+        payable(msg.sender).transfer(amount);
+
+        emit RevenueWithdrawn(_eventId, msg.sender, amount);
     }
 
     function withdraw(uint256 _amount) external onlyOwner {
